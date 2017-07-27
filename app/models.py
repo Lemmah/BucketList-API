@@ -4,6 +4,8 @@ from app import app
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://bucketlist_api:easyPassword@localhost:5432/bucketlist_app"
+
 db = SQLAlchemy(app)
 
 
