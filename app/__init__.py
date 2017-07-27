@@ -12,4 +12,4 @@ from app import views
 from app import models
 
 # Load the config file
-app.config.from_object('config')
+app.config.from_pyfile('config.py')
