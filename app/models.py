@@ -34,6 +34,7 @@ class BucketListItem(db.Model):
     name = db.Column(db.String(60))
     category = db.Column(db.String(30))
     description = db.Column(db.String(100))
+    accomplished = db.Column(db.Boolean)
     # foreign key to bucketlist: from Bucketlist.secure_id
     bucketlist_sid = db.Column(db.String(60), unique=True)
 
