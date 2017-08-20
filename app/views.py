@@ -22,9 +22,11 @@ from app import app
 @app.route('/api/bucketlists/<id>', methods=['DELETE'])
 
 # CRUD bucketlist items
-@app.route('/api/bucketlists/<id>/items/', methods['POST'])
+@app.route('/api/bucketlists/<id>/items/', methods=['POST'])
 
-@app.route('/api/bucketlists/<id>/items/<item_id>', methods['PUT'])
+@app.route('/api/bucketlists/<id>/items/<item_id>', methods=['PUT'])
 
 @app.route('/api/bucketlists/<id>/items/<item_id>', methods=['DELETE'])
-
+def delete_item(id,item_id):
+    ''' Deleting a bucketlist item '''
+    return 'This feature is yet to be implemented'
