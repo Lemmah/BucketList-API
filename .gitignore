@@ -3,3 +3,4 @@
 .coverage
 coverage.xml
 blAPIEnv
+migrations/
