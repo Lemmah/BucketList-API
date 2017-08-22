@@ -35,6 +35,14 @@ source my_venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+4. *Do Migrations*. This application uses postgresql. If you don't have psql you may install it here.
+Create a flask_api database to be used by the application while running on your localhost.
+Then, you can do migrations as:
+```
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade
+```
 
 This is enough to get you started.
 You can now run the application using:
