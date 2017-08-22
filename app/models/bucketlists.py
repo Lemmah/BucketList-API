@@ -36,10 +36,6 @@ class User(db.Model):
 
 # app/models/bucketlists
 
-from app import db
-#for the sake of relationships
-from app.models.users import User
-
 class Bucketlist(db.Model):
     """This class represents the bucketlist table."""
 
