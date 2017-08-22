@@ -17,7 +17,7 @@ class Bucketlist(db.Model):
     user_id = db.Column(db.String(255))
 
     def __init__(self, name, public_id, user_id="current user"):
-        """initialize with name."""
+        """initialize with name, public_id and user_id"""
         self.name = name
         self.public_id = public_id
         self.user_id = user_id
