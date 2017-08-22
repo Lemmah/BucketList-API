@@ -1,6 +1,5 @@
 # app loads configurations here from the config file
 from app import app
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
