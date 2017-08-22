@@ -1,4 +1,4 @@
-# app/models.py
+# app/models/bucketlists.py
 
 from app import db
 
@@ -13,10 +13,14 @@ class Bucketlist(db.Model):
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
         onupdate=db.func.current_timestamp())
+    public_id = db.Column(db.String(255))
+    user_id = db.Column(db.String(255))
 
-    def __init__(self, name):
+    def __init__(self, name, public_id, user_id="current user"):
         """initialize with name."""
         self.name = name
+        self.public_id = public_id
+        self.user_id = user_id
 
     def save(self):
         db.session.add(self)

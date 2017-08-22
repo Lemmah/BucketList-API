@@ -30,19 +30,21 @@ def delete_item(id,item_id):
     ''' Deleting a bucketlist item '''
     return 'This feature is yet to be implemented'
 """
+import uuid
 from app import app
-from app.models import Bucketlist
+from app.models.bucketlists import Bucketlist
 from flask import request, jsonify, abort
 
 # CRUD Bucketlists
 @app.route('/bucketlists', methods=['POST'])
 def create_bucketlist():
     name = str(request.data.get('name', ''))
+    public_id = str(uuid.uuid4())
     if name:
-        bucketlist = Bucketlist(name=name)
+        bucketlist = Bucketlist(name=name, public_id=public_id)
         bucketlist.save()
         response = jsonify({
-            'id': bucketlist.id,
+            'id': bucketlist.public_id,
             'name': bucketlist.name,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified
@@ -57,7 +59,7 @@ def get_all_bucketlists():
 
     for bucketlist in bucketlists:
         obj = {
-            'id': bucketlist.id,
+            'id': bucketlist.public_id,
             'name': bucketlist.name,
             'date_created': bucketlist.date_created,
             'date_modified': bucketlist.date_modified

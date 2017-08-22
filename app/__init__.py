@@ -20,7 +20,7 @@ def create_app(config_name):
     db.init_app(app)
 
     # Load the API endpoints
-    from app import views
+    from app.views import bucketlists
 
     return app
 
