@@ -34,37 +34,40 @@ from app import app
 from app.models import Bucketlist
 from flask import request, jsonify, abort
 
-@app.route('/bucketlists/', methods=['POST', 'GET'])
-def bucketlists():
-    if request.method == "POST":
-        name = str(request.data.get('name', ''))
-        if name:
-            bucketlist = Bucketlist(name=name)
-            bucketlist.save()
-            response = jsonify({
-                'id': bucketlist.id,
-                'name': bucketlist.name,
-                'date_created': bucketlist.date_created,
-                'date_modified': bucketlist.date_modified
-            })
-            response.status_code = 201
-            return response
-    else:
-        # GET
-        bucketlists = Bucketlist.get_all()
-        results = []
-
-        for bucketlist in bucketlists:
-            obj = {
-                'id': bucketlist.id,
-                'name': bucketlist.name,
-                'date_created': bucketlist.date_created,
-                'date_modified': bucketlist.date_modified
-            }
-            results.append(obj)
-        response = jsonify(results)
-        response.status_code = 200
+# CRUD Bucketlists
+@app.route('/bucketlists', methods=['POST'])
+def create_bucketlist():
+    name = str(request.data.get('name', ''))
+    if name:
+        bucketlist = Bucketlist(name=name)
+        bucketlist.save()
+        response = jsonify({
+            'id': bucketlist.id,
+            'name': bucketlist.name,
+            'date_created': bucketlist.date_created,
+            'date_modified': bucketlist.date_modified
+        })
+        response.status_code = 201
         return response
+
+@app.route('/bucketlists', methods=['GET'])
+def get_all_bucketlists():
+    bucketlists = Bucketlist.get_all()
+    results = []
+
+    for bucketlist in bucketlists:
+        obj = {
+            'id': bucketlist.id,
+            'name': bucketlist.name,
+            'date_created': bucketlist.date_created,
+            'date_modified': bucketlist.date_modified
+        }
+        results.append(obj)
+    response = jsonify(results)
+    response.status_code = 200
+    return response
+
+# Get a specific bucketlist, read it, update it or delete it   
 @app.route('/bucketlists/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def bucketlist_manipulation(id, **kwargs):
  # retrieve a buckelist using it's ID
@@ -92,7 +95,7 @@ def bucketlist_manipulation(id, **kwargs):
         response.status_code = 200
         return response
     else:
-        # GET
+        # GET one bucketlist
         response = jsonify({
             'id': bucketlist.id,
             'name': bucketlist.name,
