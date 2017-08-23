@@ -19,8 +19,14 @@ def create_app(config_name):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    # Load the API endpoints
-    from app.views import bucketlists
+    # Import and Register the Application Blue Prints 
+    # The Bucketlists Endpoints as a blue print
+    from .bucketlists import bucketlists_blueprint
+    app.register_blueprint(bucketlists_blueprint)
+    
+    # The Authentication Blue Print
+    from .auth import auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     return app
 
