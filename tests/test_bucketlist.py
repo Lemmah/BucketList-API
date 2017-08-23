@@ -42,7 +42,7 @@ class BucketlistTestCase(unittest.TestCase):
 
         # create a bucketlist by making a POST request
         res = self.client().post(
-            '/bucketlists/',
+            '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
@@ -56,14 +56,14 @@ class BucketlistTestCase(unittest.TestCase):
 
         # create a bucketlist by making a POST request
         res = self.client().post(
-            '/bucketlists/',
+            '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.bucketlist)
         self.assertEqual(res.status_code, 201)
 
         # get all the bucketlists that belong to the test user by making a GET request
         res = self.client().get(
-            '/bucketlists/',
+            '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
         )
         self.assertEqual(res.status_code, 200)
@@ -76,7 +76,7 @@ class BucketlistTestCase(unittest.TestCase):
         access_token = json.loads(result.data.decode())['access_token']
 
         rv = self.client().post(
-            '/bucketlists/',
+            '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.bucketlist)
 
@@ -100,7 +100,7 @@ class BucketlistTestCase(unittest.TestCase):
 
         # first, we create a bucketlist by making a POST request
         rv = self.client().post(
-            '/bucketlists/',
+            '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
             data={'name': 'Eat, pray and love'})
         self.assertEqual(rv.status_code, 201)
@@ -129,7 +129,7 @@ class BucketlistTestCase(unittest.TestCase):
         access_token = json.loads(result.data.decode())['access_token']
 
         rv = self.client().post(
-            '/bucketlists/',
+            '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
             data={'name': 'Eat, pray and love'})
         self.assertEqual(rv.status_code, 201)
