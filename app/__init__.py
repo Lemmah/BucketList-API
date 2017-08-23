@@ -10,16 +10,12 @@ from instance.config import app_config
 db = SQLAlchemy()
 
 def create_app(config_name):
-	# make app global so that it can be imported
-	# in the views
-    global app
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    # Import and Register the Application Blue Prints 
     # The Bucketlists Endpoints as a blue print
     from .bucketlists import bucketlists_blueprint
     app.register_blueprint(bucketlists_blueprint)
