@@ -19,12 +19,13 @@ class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
         except KeyError:
             bucketlist_id = args[1]
 
-        # Request to add an item to it
-        rv = self.client().post(
-            '/bucketlists/{}/items'.format(bucketlist_id),
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.bucketlist_item)
-        return (access_token, rv, bucketlist_id)
+        finally:
+            # Request to add an item to it
+            rv = self.client().post(
+                '/bucketlists/{}/items'.format(bucketlist_id),
+                headers=dict(Authorization="Bearer " + access_token),
+                data=args[0])
+            return (access_token, rv, bucketlist_id)
 
     def test_bucketlist_item_creation(self):
         """ Test if API can add items to bucketlist """
@@ -37,13 +38,52 @@ class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
 
     def test_api_can_get_all_buckelist_items(self):
         """ Test if API can get all items in a Bucketlist """
-        pass
+        # Create First Item
+        access_token, rv, \
+        bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)
+        # Create Second Item
+        access_token, rv, \
+        bucketlist_id = self.create_bucketlist_item(self.bucketlist_item1,
+            bucketlist_id)
+        self.assertEqual(rv.status_code, 201)
+        res = self.client().get(
+            '/bucketlists/{}/items'.format(bucketlist_id),
+            headers=dict(Authorization="Bearer " + access_token),)
+        self.assertEqual(res.status_code, 200)
+        # Test for first item
+        self.assertIn('See the Hills', str(res.data))
+        # Test for second item
+        self.assertIn('Propose', str(res.data))
+
     def test_api_can_get_one_item_using_id(self):
         """ Test if API can get a specific item in a Bucketlist """
-        pass
+        # First Create an Item
+        access_token, rv, \
+        bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)
+        self.assertEqual(rv.status_code, 201)
+        results = json.loads(rv.data.decode())
+        result = self.client().get(
+            '/bucketlists/{}/items/{}'.format(bucketlist_id, results['id']),
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertEqual(result.status_code, 200)
+
+
+
     def test_bucketlist_item_can_be_edited(self):
         """ Test if API can edit details of an item """
-        pass
+        # First Create an Item
+        access_token, rv, \
+        bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)
+        self.assertEqual(rv.status_code, 201)
+        results = json.loads(rv.data.decode())
+        result = self.client().put(
+            '/bucketlists/{}/items/{}'.format(bucketlist_id, results['id']),
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist_item1)
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Propose', str(result.data))
+
+
     def test_api_can_delete_an_item(self):
         """ Test if API can delete items from a bucketlist """
         pass
