@@ -60,17 +60,19 @@ You can use postman or even curl to reach out to the following api endpoints:
 
 URL Endpoint	|               HTTP Request   | Resource Accessed | Access Type|
 ----------------|-----------------|-------------|------------------
-/api/bucketlists/auth/register/   |      POST	| Register a new user|publc
-/api/bucketlists/auth/login/	  |     POST	| Login and retrieve token|public
-/api/bucketlists/	              |      POST	|Create a new Bucketlist|private
-/api/bucketlists/	              |      GET	|     Retrieve all bucketlists for user|private
-/api/bucketlists/<id>/            |  	GET	    | Retrieve a bucketlist by ID | private
-/api/bucketlists/<id>/	          |      PUT	|     Update a bucketlist |private
-/api/bucketlists/<id>/	          |      DELETE	| Delete a bucketlist |private
-/api/bucketlists/<id>/items/  |           GET    |Retrive items in a given bucket list|private
-/api/bucketlists/<id>/items/     |     POST	| Create items in a bucketlist |private
-/api/bucketlists/<id>/items/<item_id>/|	DELETE	| Delete an item in a bucketlist |prvate
-/api/bucketlists/<id>/items/<item_id>/|	PUT   	|update a bucketlist item details |private
+/api/bucketlists/auth/register   |      POST	| Register a new user|publc
+/api/bucketlists/auth/login	  |     POST	| Login and retrieve token|public
+/api/bucketlists/auth/logout	  |     POST	| Logout and thus deactivate token|public
+/api/bucketlists/auth/reset-password	  |     PUT	| Reset your password when logged in|private
+/api/bucketlists	              |      POST	|Create a new Bucketlist|private
+/api/bucketlists	              |      GET	|     Retrieve all bucketlists for user|private
+/api/bucketlists/</id>            |  	GET	    | Retrieve a bucketlist by ID | private
+/api/bucketlists/</id>	          |      PUT	|     Update a bucketlist |private
+/api/bucketlists/</id>	          |      DELETE	| Delete a bucketlist |private
+/api/bucketlists/</id>/items/  |           GET    |Retrive items in a given bucket list|private
+/api/bucketlists/</id>/items/     |     POST	| Create items in a bucketlist |private
+/api/bucketlists/</id>/items/<item_id>|	DELETE	| Delete an item in a bucketlist |prvate
+/api/bucketlists/</id>/items/<item_id>|	PUT   	|update a bucketlist item details |private
 
 
 ## Deployment
