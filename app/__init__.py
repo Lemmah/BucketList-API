@@ -19,6 +19,10 @@ def create_app(config_name):
     # The Bucketlists Endpoints as a blue print
     from .bucketlists import bucketlists_blueprint
     app.register_blueprint(bucketlists_blueprint)
+
+    # The Bucketlist Items Endpoints registration
+    from .bucketlist_items import bucketlist_items_blueprint
+    app.register_blueprint(bucketlist_items_blueprint)
     
     # The Authentication Blue Print
     from .auth import auth_blueprint
