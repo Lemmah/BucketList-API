@@ -125,6 +125,15 @@ class BucketlistTestCase(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 404)
 
+    # Some Common Edge Cases
+    def test_creation_of_duplicate_bucketlist(self):
+        """ Ensure Duplicate Bucketlists Cannot be Created """
+        create_bucketlist = self.create_bucketlist()[0]
+        self.assertEqual(create_bucketlist.status_code, 201)
+        create_duplicate = self.create_bucketlist()[0]
+        # Assert that this action causes conflict
+        self.assertEqual(create_duplicate.status_code, 409)
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
