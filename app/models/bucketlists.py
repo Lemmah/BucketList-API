@@ -88,6 +88,8 @@ class Bucketlist(db.Model):
         onupdate=db.func.current_timestamp())
     public_id = db.Column(db.String(255))
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
+    bucketlist_items = db.relationship(
+        'BucketlistItem', order_by='BucketlistItem.id', cascade="all, delete-orphan")
 
     def __init__(self, name, public_id, created_by):
         """initialize with name, public_id and user_id"""
@@ -108,3 +110,39 @@ class Bucketlist(db.Model):
 
     def __repr__(self):
         return "<Bucketlist: {}>".format(self.name)
+
+# app/models/bucketlists
+
+class BucketlistItem(db.Model):
+    """This class represents the bucketlist table."""
+
+    __tablename__ = 'bucketlist_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_modified = db.Column(
+        db.DateTime, default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp())
+    public_id = db.Column(db.String(255))
+    belongs_to = db.Column(db.Integer, db.ForeignKey(Bucketlist.id))
+
+    def __init__(self, name, public_id, belongs_to):
+        """initialize with name, public_id and user_id"""
+        self.name = name
+        self.public_id = public_id
+        self.belongs_to = belongs_to
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all(user_id):
+        return BucketlistItem.query.filter_by(belongs_to=belongs_to)
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def __repr__(self):
+        return "<BucketlistItem: {}>".format(self.name)
