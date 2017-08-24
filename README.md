@@ -36,7 +36,7 @@ source my_venv/bin/activate
 pip install -r requirements.txt
 ```
 4. *Do Migrations*. This application uses postgresql. If you don't have psql you may install it here.
-Create a flask_api database to be used by the application while running on your localhost.
+Create a `flask_api` database to be used by the application while running on your localhost.
 Then, you can do migrations as:
 ```
 python manage.py db init
@@ -46,15 +46,32 @@ python manage.py db upgrade
 
 This is enough to get you started.
 You can now run the application using:
-`gunicorn runapp:app --log-file -`
-or
-`python runapp.py`
+
+`python runapi.py`
 
 
 ## Running the tests
 
 Easy, just:
-`pytest app/`
+`pytest tests/`
+
+## API Endpoints
+You can use postman or even curl to reach out to the following api endpoints:
+
+URL Endpoint	|               HTTP Request   | Resource Accessed | Access Type|
+----------------|-----------------|-------------|------------------
+/api/bucketlists/auth/register/   |      POST	| Register a new user|publc
+/api/bucketlists/auth/login/	  |     POST	| Login and retrieve token|public
+/api/bucketlists/	              |      POST	|Create a new Bucketlist|private
+/api/bucketlists/	              |      GET	|     Retrieve all bucketlists for user|private
+/api/bucketlists/<id>/            |  	GET	    | Retrieve a bucketlist by ID | private
+/api/bucketlists/<id>/	          |      PUT	|     Update a bucketlist |private
+/api/bucketlists/<id>/	          |      DELETE	| Delete a bucketlist |private
+/api/bucketlists/<id>/items/  |           GET    |Retrive items in a given bucket list|private
+/api/bucketlists/<id>/items/     |     POST	| Create items in a bucketlist |private
+/api/bucketlists/<id>/items/<item_id>/|	DELETE	| Delete an item in a bucketlist |prvate
+/api/bucketlists/<id>/items/<item_id>/|	PUT   	|update a bucketlist item details |private
+
 
 ## Deployment
 
