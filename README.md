@@ -1,5 +1,7 @@
 # BucketList-API
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5c8000c93a104c788098760f1c339451)](https://www.codacy.com/app/Lemmah/BucketList-API?utm_source=github.com&utm_medium=referral&utm_content=Lemmah/BucketList-API&utm_campaign=badger)
+
 The innovative bucketlist app is an application that allows users  to record and share things they want to achieve or experience before reaching a certain age meeting the needs of keeping track of their dreams and goals. This is the backend API for enabling users to perform crud operations on bucketlists and items with user persistence.
 
 ## Getting Started
