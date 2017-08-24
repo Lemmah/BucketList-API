@@ -80,7 +80,7 @@ class BucketlistView(MethodView):
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(id=id).first()
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
                 if not bucketlist:
                     abort(404)
                 response = jsonify({
@@ -102,7 +102,7 @@ class BucketlistView(MethodView):
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(id=id).first()
+                bucketlist = Bucketlist.query.filter_by(id=id, created_by=create_by).first()
                 if not bucketlist:
                     abort(404)
                 name = str(request.data.get('name', ''))
