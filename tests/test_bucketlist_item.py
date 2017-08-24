@@ -1,5 +1,5 @@
 # Extend testing of bucketlist
-from . import test_bucketlist
+from tests import test_bucketlist
 import json
 
 class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
@@ -33,7 +33,7 @@ class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
         rv, bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)[1:3]
         self.assertEqual(rv.status_code, 201)
         self.assertIn('See the Hills There', str(rv.data))
-        
+
 
 
     def test_api_can_get_all_buckelist_items(self):
