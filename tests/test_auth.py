@@ -33,6 +33,12 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(result['message'], "You registered successfully. Please log in.")
         self.assertEqual(res.status_code, 201)
 
+        # Edge case: test if any common registration error occurs
+        incomplete_registration_data = {'email': 'test@incomplete.com'}
+        res = self.client().post('/auth/register', data=incomplete_registration_data)
+        self.assertRaises(Exception, res)
+        self.assertEqual(res.status_code, 401) # Forbidden
+
     def test_already_registered_user(self):
         """Test that a user cannot be registered twice."""
         res = self.client().post('/auth/register', data=self.user_data)

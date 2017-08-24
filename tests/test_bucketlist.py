@@ -125,6 +125,12 @@ class BucketlistTestCase(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 404)
 
+        # Edge case: Test double deletion
+        res = self.client().delete(
+            '/bucketlists/{}'.format(results['id']),
+            headers=dict(Authorization="Bearer " + access_token),)
+        self.assertEqual(res.status_code, 404)
+
     # Some Common Edge Cases
     def test_creation_of_duplicate_bucketlist(self):
         """ Ensure Duplicate Bucketlists Cannot be Created """

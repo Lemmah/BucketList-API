@@ -138,7 +138,7 @@ class BucketlistItem(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all(user_id):
+    def get_all(belongs_to):
         return BucketlistItem.query.filter_by(belongs_to=belongs_to)
     def delete(self):
         db.session.delete(self)

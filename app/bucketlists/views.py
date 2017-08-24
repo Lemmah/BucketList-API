@@ -135,11 +135,13 @@ class BucketlistView(MethodView):
             if not isinstance(user_id, str):
                 bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if not bucketlist:
-                    abort(404)
+                    return make_response(
+                        jsonify({"message": "The Bucketlist does not exist"})), 404
                 bucketlist.delete()
-                response = jsonify({"message": "bucketlist {} deleted".format(bucketlist.id)})
+                response = jsonify(
+                    {"message": "bucketlist {} deleted".format(bucketlist.id)})
                 return make_response(response), 200
-        return ''
+
 
 
 # Define the API resource

@@ -86,7 +86,21 @@ class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
 
     def test_api_can_delete_an_item(self):
         """ Test if API can delete items from a bucketlist """
-        pass
+        # First Create an Item
+        access_token, rv, \
+        bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)
+        self.assertEqual(rv.status_code, 201)
+        results = json.loads(rv.data.decode())
+        result = self.client().delete(
+            '/bucketlists/{}/items/{}'.format(bucketlist_id, results['id']),
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist_item1)
+        self.assertEqual(result.status_code, 200)
+        # Try getting deleted bucketlist
+        result = self.client().get(
+            '/bucketlists/{}/items/{}'.format(bucketlist_id, results['id']),
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertEqual(result.status_code, 404)
 
     def test_creation_of_duplicate_bucketlist_items(self):
         """ Ensure API forbids creation of duplicate items """
