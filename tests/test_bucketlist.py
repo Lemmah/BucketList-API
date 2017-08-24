@@ -11,7 +11,9 @@ class BucketlistTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app(config_name="testing")
         self.client = self.app.test_client
-        self.bucketlist = {'name': 'Go to Borabora for vacay'}
+        self.bucketlist = {'name': 'Go to Borabora for vacation'}
+        self.bucketlist_item = {'name': 'See the Hills There'}
+        self.bucketlist_item1 = {'name': 'Propose to Her'}
 
         # binds the app to the current context
         with self.app.app_context():
@@ -34,8 +36,8 @@ class BucketlistTestCase(unittest.TestCase):
         }
         return self.client().post('/auth/login', data=user_data)
 
-    def test_bucketlist_creation(self):
-        """Test API can create a bucketlist (POST request)"""
+    def create_bucketlist(self):
+        """ Important for testing creation of bucketlist items """
         self.register_user()
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
@@ -45,20 +47,18 @@ class BucketlistTestCase(unittest.TestCase):
             '/bucketlists',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.bucketlist)
+        return (res,access_token)
+
+    def test_bucketlist_creation(self):
+        """Test API can create a bucketlist (POST request)"""
+        res = self.create_bucketlist()[0]
         self.assertEqual(res.status_code, 201)
         self.assertIn('Go to Borabora', str(res.data))
 
     def test_api_can_get_all_bucketlists(self):
         """Test API can get a bucketlist (GET request)."""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
-        # create a bucketlist by making a POST request
-        res = self.client().post(
-            '/bucketlists',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.bucketlist)
+        # Create a bucketlist first
+        res, access_token = self.create_bucketlist()
         self.assertEqual(res.status_code, 201)
 
         # get all the bucketlists that belong to the test user by making a GET request
@@ -71,14 +71,7 @@ class BucketlistTestCase(unittest.TestCase):
 
     def test_api_can_get_bucketlist_by_id(self):
         """Test API can get a single bucketlist by using it's id."""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
-        rv = self.client().post(
-            '/bucketlists',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.bucketlist)
+        rv, access_token = self.create_bucketlist()
 
         # assert that the bucketlist is created 
         self.assertEqual(rv.status_code, 201)
@@ -94,15 +87,7 @@ class BucketlistTestCase(unittest.TestCase):
 
     def test_bucketlist_can_be_edited(self):
         """Test API can edit an existing bucketlist. (PUT request)"""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
-        # first, we create a bucketlist by making a POST request
-        rv = self.client().post(
-            '/bucketlists',
-            headers=dict(Authorization="Bearer " + access_token),
-            data={'name': 'Eat, pray and love'})
+        rv, access_token = self.create_bucketlist()
         self.assertEqual(rv.status_code, 201)
         # get the json with the bucketlist
         results = json.loads(rv.data.decode())
@@ -124,15 +109,7 @@ class BucketlistTestCase(unittest.TestCase):
 
     def test_bucketlist_deletion(self):
         """Test API can delete an existing bucketlist. (DELETE request)."""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
-        rv = self.client().post(
-            '/bucketlists',
-            headers=dict(Authorization="Bearer " + access_token),
-            data={'name': 'Eat, pray and love'})
-        self.assertEqual(rv.status_code, 201)
+        rv, access_token = self.create_bucketlist()
         # get the bucketlist in json
         results = json.loads(rv.data.decode())
 
