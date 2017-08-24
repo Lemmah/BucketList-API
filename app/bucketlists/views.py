@@ -52,6 +52,10 @@ class BucketlistsView(MethodView):
                 name = str(request.data.get('name', ''))
                 public_id = str(uuid.uuid4())
                 if name:
+                    bucketlist = Bucketlist.query.filter_by(name=name,
+                        created_by=user_id).first()
+                    if bucketlist:
+                        return make_response({"message": "A Bucketlist with the same name already exists"}), 409
                     bucketlist = Bucketlist(name=name,
                         created_by=user_id, public_id=public_id)
                     bucketlist.save()
