@@ -1,0 +1,10 @@
+[report]
+omit=
+    */python?.?/*
+    *site-packages/*
+    *site-packages/nose/*
+    *__init__*
+    *tests/*
+exclude_lines=
+    pragma: no cover
+    raise Exception()
