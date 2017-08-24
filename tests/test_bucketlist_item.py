@@ -32,8 +32,7 @@ class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
         rv, bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)[1:3]
         self.assertEqual(rv.status_code, 201)
         self.assertIn('See the Hills There', str(rv.data))
-        rv = self.create_bucketlist_item(self.bucketlist_item, bucketlist_id)[1]
-        self.assertEqual(rv.status_code, 409)
+        
 
 
     def test_api_can_get_all_buckelist_items(self):
@@ -48,3 +47,12 @@ class TestBucketlistItem(test_bucketlist.BucketlistTestCase):
     def test_api_can_delete_an_item(self):
         """ Test if API can delete items from a bucketlist """
         pass
+
+    def test_creation_of_duplicate_bucketlist_items(self):
+        """ Ensure API forbids creation of duplicate items """
+        rv, bucketlist_id = self.create_bucketlist_item(self.bucketlist_item)[1:3]
+        self.assertEqual(rv.status_code, 201)
+        self.assertIn('See the Hills There', str(rv.data))
+        rv = self.create_bucketlist_item(self.bucketlist_item, bucketlist_id)[1]
+        # Assert that duplication causes conflict
+        self.assertEqual(rv.status_code, 409)
