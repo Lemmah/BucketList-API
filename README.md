@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Lemmah/BucketList-API.svg?branch=master)](https://travis-ci.org/Lemmah/BucketList-API)	[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5c8000c93a104c788098760f1c339451)](https://www.codacy.com/app/Lemmah/BucketList-API?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Lemmah/BucketList-API&amp;utm_campaign=Badge_Grade)
+
 # BucketList-API
 
 The innovative bucketlist app is an application that allows users  to record and share things they want to achieve or experience before reaching a certain age meeting the needs of keeping track of their dreams and goals. This is the backend API for enabling users to perform crud operations on bucketlists and items with user persistence.
@@ -35,18 +37,45 @@ source my_venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+4. *Do Migrations*. This application uses postgresql. If you don't have psql you may install it here.
+Create a `flask_api` database to be used by the application while running on your localhost.
+Then, you can do migrations as:
+```
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade
+```
 
 This is enough to get you started.
 You can now run the application using:
-`gunicorn runapp:app --log-file -`
-or
-`python runapp.py`
+
+`python runapi.py`
 
 
 ## Running the tests
 
 Easy, just:
-`pytest app/`
+`pytest tests/`
+
+## API Endpoints
+You can use postman or even curl to reach out to the following api endpoints:
+
+URL Endpoint	|               HTTP Request   | Resource Accessed | Access Type|
+----------------|-----------------|-------------|------------------
+/api/bucketlists/auth/register   |      POST	| Register a new user|publc
+/api/bucketlists/auth/login	  |     POST	| Login and retrieve token|public
+/api/bucketlists/auth/logout	  |     POST	| Logout and thus deactivate token|public
+/api/bucketlists/auth/reset-password	  |     PUT	| Reset your password when logged in|private
+/api/bucketlists	              |      POST	|Create a new Bucketlist|private
+/api/bucketlists	              |      GET	|     Retrieve all bucketlists for user|private
+/api/bucketlists/<buckelist_id>            |  	GET	    | Retrieve a bucketlist by ID | private
+/api/bucketlists/<bucketlist_id>	          |      PUT	|     Update a bucketlist |private
+/api/bucketlists/<bucketlist_id>	          |      DELETE	| Delete a bucketlist |private
+/api/bucketlists/<bucketlist_id>/items/  |           GET    |Retrive items in a given bucket list|private
+/api/bucketlists/<bucketlist_id>/items/     |     POST	| Create items in a bucketlist |private
+/api/bucketlists/<bucketlist_id>/items/<item_id>|	DELETE	| Delete an item in a bucketlist |prvate
+/api/bucketlists/<bucketlist_id>/items/<item_id>|	PUT   	|update a bucketlist item details |private
+
 
 ## Deployment
 

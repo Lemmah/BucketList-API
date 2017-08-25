@@ -1,15 +1,32 @@
 # app/__init__.py
 
-from flask import Flask
+from flask_api import FlaskAPI
+from flask_sqlalchemy import SQLAlchemy
 
-# Initialize the app
-app = Flask(__name__, instance_relative_config=True)
+# local import
+from instance.config import app_config
 
-# Load the views
-from app import views
+# initialize sql-alchemy
+db = SQLAlchemy()
 
-# Load the models
-from app import models
+def create_app(config_name):
+    app = FlaskAPI(__name__, instance_relative_config=True)
+    app.config.from_object(app_config[config_name])
+    app.config.from_pyfile('config.py')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
 
-# Load the config file
-app.config.from_object('config')
+    # The Bucketlists Endpoints as a blue print
+    from .bucketlists import bucketlists_blueprint
+    app.register_blueprint(bucketlists_blueprint)
+
+    # The Bucketlist Items Endpoints registration
+    from .bucketlist_items import bucketlist_items_blueprint
+    app.register_blueprint(bucketlist_items_blueprint)
+    
+    # The Authentication Blue Print
+    from .auth import auth_blueprint
+    app.register_blueprint(auth_blueprint)
+
+    return app
+
