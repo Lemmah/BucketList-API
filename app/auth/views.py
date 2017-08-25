@@ -5,6 +5,7 @@ from . import auth_blueprint
 from flask.views import MethodView
 from flask import make_response, request, jsonify
 from app.models.bucketlists import User
+import re
 
 class RegistrationView(MethodView):
     """This class registers a new user."""
@@ -20,10 +21,34 @@ class RegistrationView(MethodView):
             try:
                 post_data = request.data
                 # Register the user
-                email = post_data['email']
-                password = post_data['password']
+                email = post_data['email'].strip()
+                password = post_data['password'].strip()
                 user = User(email=email, password=password)
                 user.save()
+
+                # check registration without password
+                if not password:
+                    return make_response(
+                        jsonify({"error": "Registration without password is not allowed" })), 403
+
+                # check password length
+                if len(password) < 8:
+                    return make_response(
+                        jsonify({"error": "Password too short, minimum lenght is 8"})), 403
+
+                # check email is not empty
+                if not email:
+                    return make_response(
+                        jsonify({"error": "You cannot register without an email"})), 403
+                    
+                # check correct format
+                regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+                if not re.match(regex, email):
+                    response = jsonify({
+                        'error':'The email address input is not valid'
+                    })
+                    response.status_code = 403
+                    return response
 
                 response = {
                     'message': 'You registered successfully. Please log in.'
