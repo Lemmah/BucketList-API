@@ -1,1 +1,1 @@
-web: python runapi.py
+web: python apidocs.py
