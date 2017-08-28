@@ -46,7 +46,7 @@ class AuthTestCase(unittest.TestCase):
         second_res = self.client().post('/auth/register', data=self.user_data)
         self.assertEqual(second_res.status_code, 406)
         # get the results returned in json format
-        result = json.loads(second_res.data.decode())
+        result = json.loads(second_res.data.decode('utf-8'))
         self.assertEqual(
             result['error'], "User already exists. Please login.")
     def test_user_login(self):
@@ -56,7 +56,7 @@ class AuthTestCase(unittest.TestCase):
         login_res = self.client().post('/auth/login', data=self.user_data)
 
         # get the results in json format
-        result = json.loads(login_res.data.decode())
+        result = json.loads(login_res.data.decode('utf-8'))
         # Test that the response contains success message
         self.assertEqual(result['message']['info'], "You logged in successfully.")
         # Assert that the status code is equal to 200
@@ -73,7 +73,7 @@ class AuthTestCase(unittest.TestCase):
         # send a POST request to /auth/login with the data above
         res = self.client().post('/auth/login', data=not_a_user)
         # get the result in json
-        result = json.loads(res.data.decode())
+        result = json.loads(res.data.decode('utf-8'))
 
         # assert that this response must contain an error message 
         # and an error status code 401(Unauthorized)
