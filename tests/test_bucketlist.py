@@ -73,11 +73,11 @@ class BucketlistTestCase(unittest.TestCase):
         """Test API can get a single bucketlist by using it's id."""
         rv, access_token = self.create_bucketlist()
 
-        # assert that the bucketlist is created 
+        # assert that the bucketlist is created
         self.assertEqual(rv.status_code, 201)
         # get the response data in json format
         results = json.loads(rv.data.decode())
-
+        print (results, "************************************")
         result = self.client().get(
             '/bucketlists/{}'.format(results['id']),
             headers=dict(Authorization="Bearer " + access_token))
