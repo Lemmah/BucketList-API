@@ -2,7 +2,6 @@
 
 from . import bucketlists_blueprint
 from app.responses.responses import Response, Success, Error
-
 import uuid
 from app.models.bucketlists import Bucketlist, User
 from flask import request, jsonify, abort, make_response
@@ -19,56 +18,43 @@ class BucketlistsView(MethodView):
         self.success = Success()
         self.response = Response()
 
-    def get(self):
+    from app.decorators import token_required
+
+    @token_required
+    def get(self, user_id):
         '''
         GET request for url: /bucketlist
         Get all bucketlists
         '''
-        auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
+        bucketlists = Bucketlist.query.filter_by(created_by=user_id)
+        results = []
 
-        if access_token:
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                bucketlists = Bucketlist.query.filter_by(created_by=user_id)
-                results = []
+        for bucketlist in bucketlists:
+            obj = self.response.define_bucketlist(bucketlist)
+            results.append(obj)
 
-                for bucketlist in bucketlists:
-                    obj = self.response.define_bucketlist(bucketlist)
-                    results.append(obj)
-
-                return self.success.complete_request(results)
-            return self.error.forbid_action("Token has been rejected")
-        return self.error.unauthorized(
-            "Login to get authorized. If you had logged in, your session expired.")
-
-    def post(self):
+        return self.success.complete_request(results)
+    
+    @token_required        
+    def post(self, user_id):
         '''
         POST request for url: /bucketlist
         Create a bucketlist
         '''
         # Get the access token from the header
-        auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
-
-        if access_token:
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                name = str(request.data.get('name', ''))
-                public_id = str(uuid.uuid4())
-                if name:
-                    bucketlist = Bucketlist.query.filter_by(name=name,
-                        created_by=user_id).first()
-                    if bucketlist:
-                        return self.error.causes_conflict("A Bucketlist with the same name already exists")
-                    bucketlist = Bucketlist(name=name,
-                        created_by=user_id, public_id=public_id)
-                    bucketlist.save()
-                    response = self.response.define_bucketlist(bucketlist)
-                    return self.success.create_resource(response)
-                return self.error.not_acceptable("A bucketlist must have a name")
-            return self.error.forbid_action("Token has been rejected")
-        return self.error.unauthorized("Log in to get a token")
+        name = str(request.data.get('name', ''))
+        public_id = str(uuid.uuid4())
+        if name:
+            bucketlist = Bucketlist.query.filter_by(name=name,
+                created_by=user_id).first()
+            if bucketlist:
+                return self.error.causes_conflict("A Bucketlist with the same name already exists")
+            bucketlist = Bucketlist(name=name,
+                created_by=user_id, public_id=public_id)
+            bucketlist.save()
+            response = self.response.define_bucketlist(bucketlist)
+            return self.success.create_resource(response)
+        return self.error.not_acceptable("A bucketlist must have a name")
 
 
 # app.route: /bucketlists/<int:id>
@@ -78,61 +64,37 @@ class BucketlistView(BucketlistsView):
     Facilitating manipulation of a bucketlist
     '''
 
-    def get(self, id):
+    from app.decorators import token_required
+
+    @token_required
+    def get(self, id, user_id):
         ''' READ a bucketlist '''
-        auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
+        bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+        if not bucketlist:
+            return self.error.not_found("Bucketlist not found")
+        response = self.response.define_bucketlist(bucketlist)
+        return self.success.complete_request(response)
 
-        if access_token:
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
-                if not bucketlist:
-                    return self.error.not_found("Bucketlist not found")
-                response = self.response.define_bucketlist(bucketlist)
-                return self.success.complete_request(response)
-            return self.error.forbid_action("Token has been rejected")
-        return self.error.unauthorized("Log in to get an access token")
-
-
-    def put(self, id):
+    @token_required
+    def put(self, id, user_id):
         ''' UPDATE a bucketlist '''
-        auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
+        bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+        if not bucketlist:
+            return self.error.not_found("Bucketlist not found")
+        name = str(request.data.get('name', ''))
+        bucketlist.name = name
+        bucketlist.save()
+        response = self.response.define_bucketlist(bucketlist)
+        return self.success.complete_request(response)
 
-        if access_token:
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
-                if not bucketlist:
-                    return self.error.not_found("Bucketlist not found")
-                name = str(request.data.get('name', ''))
-
-                bucketlist.name = name
-                bucketlist.save()
-
-                response = self.response.define_bucketlist(bucketlist)
-                return self.success.complete_request(response)
-            return self.error.forbid_action("Token has been rejected")
-        return self.error.unauthorized("Login to get access token")
-
-
-    def delete(self, id):
-        auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
-
-        if access_token:
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(id=id).first()
-                if not bucketlist:
-                    return self.error.not_found("Bucketlist does not exist.")
-                bucketlist.delete()
-                response = "Bucketlist {} has been deleted.".format(bucketlist.id)
-                return self.success.complete_request(response)
-            return self.error.forbid_action("Token has been rejected")
-        return self.error.unauthorized("Login to get an access token")
-
+    @token_required
+    def delete(self, id, user_id):
+        bucketlist = Bucketlist.query.filter_by(id=id).first()
+        if not bucketlist:
+            return self.error.not_found("Bucketlist does not exist.")
+        bucketlist.delete()
+        response = "Bucketlist {} has been deleted.".format(bucketlist.id)
+        return self.success.complete_request(response)
 
 
 # Define the API resource
