@@ -1,6 +1,7 @@
 # app/bucketlists/views.py
 
 from . import bucketlists_blueprint
+from app.responses.responses import Response, Success, Error
 
 import uuid
 from app.models.bucketlists import Bucketlist, User
@@ -10,6 +11,13 @@ from flask.views import MethodView
 # app.route: /bucketlists
 class BucketlistsView(MethodView):
     ''' Handling the bucketlists endpoints '''
+
+    def __init__(self):
+        """ Instantiate my Custom Responses """
+        super().__init__()
+        self.error = Error()
+        self.success = Success()
+        self.response = Response()
 
     def get(self):
         '''
@@ -26,16 +34,13 @@ class BucketlistsView(MethodView):
                 results = []
 
                 for bucketlist in bucketlists:
-                    obj = {
-                        'id': bucketlist.id,
-                        'name': bucketlist.name,
-                        'date_created': bucketlist.date_created,
-                        'date_modified': bucketlist.date_modified,
-                        'created_by': bucketlist.created_by
-                    }
+                    obj = self.response.define_bucketlist(bucketlist)
                     results.append(obj)
 
-                return make_response(jsonify(results)), 200
+                return self.success.complete_request(results)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized(
+            "Login to get authorized. If you had logged in, your session expired.")
 
     def post(self):
         '''
@@ -55,23 +60,20 @@ class BucketlistsView(MethodView):
                     bucketlist = Bucketlist.query.filter_by(name=name,
                         created_by=user_id).first()
                     if bucketlist:
-                        return make_response({"message": "A Bucketlist with the same name already exists"}), 409
+                        return self.error.causes_conflict("A Bucketlist with the same name already exists")
                     bucketlist = Bucketlist(name=name,
                         created_by=user_id, public_id=public_id)
                     bucketlist.save()
-                    response = jsonify({
-                        'id': bucketlist.id,
-                        'name': bucketlist.name,
-                        'date_created': bucketlist.date_created,
-                        'date_modified': bucketlist.date_modified,
-                        'create_by': user_id
-                        })
-                    return make_response(response), 201
+                    response = self.response.define_bucketlist(bucketlist)
+                    return self.success.create_resource(response)
+                return self.error.not_acceptable("A bucketlist must have a name")
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Log in to get a token")
 
 
 # app.route: /bucketlists/<int:id>
 # --> Manipulating a specific already existing buckelist
-class BucketlistView(MethodView):
+class BucketlistView(BucketlistsView):
     '''
     Facilitating manipulation of a bucketlist
     '''
@@ -86,17 +88,12 @@ class BucketlistView(MethodView):
             if not isinstance(user_id, str):
                 bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
                 if not bucketlist:
-                    abort(404)
-                response = jsonify({
-                    'id': bucketlist.id,
-                    'name': bucketlist.name,
-                    'date_createad': bucketlist.date_created,
-                    'date_modified': bucketlist.date_modified,
-                    'created_by': bucketlist.created_by
-                    })
-                return make_response(response), 200
+                    return self.error.not_found("Bucketlist not found")
+                response = self.response.define_bucketlist(bucketlist)
+                return self.success.complete_request(response)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Log in to get an access token")
 
-        return ''
 
     def put(self, id):
         ''' UPDATE a bucketlist '''
@@ -108,23 +105,17 @@ class BucketlistView(MethodView):
             if not isinstance(user_id, str):
                 bucketlist = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
                 if not bucketlist:
-                    abort(404)
+                    return self.error.not_found("Bucketlist not found")
                 name = str(request.data.get('name', ''))
 
                 bucketlist.name = name
                 bucketlist.save()
 
-                response = {
-                    'id': bucketlist.id,
-                    'name': bucketlist.name,
-                    'date_created': bucketlist.date_created,
-                    'date_modified': bucketlist.date_modified,
-                    'created_by': bucketlist.created_by
-                }
-                return make_response(jsonify(response)), 200
+                response = self.response.define_bucketlist(bucketlist)
+                return self.success.complete_request(response)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Login to get access token")
 
-        response = jsonify({"message": "Token is missing"})
-        return response
 
     def delete(self, id):
         auth_header = request.headers.get('Authorization')
@@ -135,12 +126,12 @@ class BucketlistView(MethodView):
             if not isinstance(user_id, str):
                 bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if not bucketlist:
-                    return make_response(
-                        jsonify({"message": "The Bucketlist does not exist"})), 404
+                    return self.error.not_found("Bucketlist does not exist.")
                 bucketlist.delete()
-                response = jsonify(
-                    {"message": "bucketlist {} deleted".format(bucketlist.id)})
-                return make_response(response), 200
+                response = "Bucketlist {} has been deleted.".format(bucketlist.id)
+                return self.success.complete_request(response)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Login to get an access token")
 
 
 

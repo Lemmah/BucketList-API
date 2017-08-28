@@ -40,7 +40,7 @@ class BucketlistTestCase(unittest.TestCase):
         """ Important for testing creation of bucketlist items """
         self.register_user()
         result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
+        access_token = json.loads(result.data.decode())['message']['access_token']
 
         # create a bucketlist by making a POST request
         res = self.client().post(

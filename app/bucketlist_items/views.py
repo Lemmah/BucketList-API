@@ -1,6 +1,7 @@
 # app/bucketlist_items/views.py
 
 from . import bucketlist_items_blueprint
+from app.responses.responses import Response, Success, Error
 
 import uuid
 from app.models.bucketlists import Bucketlist, BucketlistItem, User
@@ -8,8 +9,14 @@ from flask import request, jsonify, abort, make_response
 from flask.views import MethodView
 
 # app.route: /bucketlists
-class BucketlistsView(MethodView):
+class BucketlistItemsView(MethodView):
     ''' Handling the bucketlists endpoints '''
+    
+    def __init__(self):
+        super().__init__()
+        self.response = Response()
+        self.error = Error()
+        self.success = Success()
 
     def get(self,id):
         '''
@@ -24,25 +31,18 @@ class BucketlistsView(MethodView):
             if not isinstance(user_id, str):
                 bucketlist_items = BucketlistItem.get_all(belongs_to=id)
                 results = []
-
                 for bucketlist_item in bucketlist_items:
-                    obj = {
-                        'id': bucketlist_item.id,
-                        'name': bucketlist_item.name,
-                        'date_created': bucketlist_item.date_created,
-                        'date_modified': bucketlist_item.date_modified,
-                        'belongs_to': bucketlist_item.belongs_to
-                    }
+                    obj = self.response.define_bucketlist_item(bucketlist_item)
                     results.append(obj)
-
-                return make_response(jsonify(results)), 200
+                return self.success.complete_request(results)
+            return self.error.forbid_action("Token has been rejected")
+        return self.unauthorized("Login to get access token")
 
     def post(self, id):
         '''
         POST request for url: /bucketlist/<id>/items
         Create a bucketlist item
         '''
-        # Get the access token from the header
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
@@ -51,27 +51,23 @@ class BucketlistsView(MethodView):
             if not isinstance(user_id, str):
                 name = str(request.data.get('name', ''))
                 if name:
-                    # Ensuring no duplicate Bucketlist items.
                     bucketlist_item = BucketlistItem.query.filter_by(belongs_to=id, name=name).first()
                     if not bucketlist_item:
                         public_id = str(uuid.uuid4())
                         bucketlist_item = BucketlistItem(name=name,
                             belongs_to=id, public_id=public_id)
                         bucketlist_item.save()
-                        response = jsonify({
-                            'id': bucketlist_item.id,
-                            'name': bucketlist_item.name,
-                            'date_created': bucketlist_item.date_created,
-                            'date_modified': bucketlist_item.date_modified,
-                            'belongs_to': bucketlist_item.belongs_to
-                            })
-                        return make_response(response), 201
-                    return make_response(jsonify({"message": "Bucketlist Item already exists"})), 409
+                        response = self.response.define_bucketlist_item(bucketlist_item)
+                        return self.success.create_resource(response)
+                    return self.error.causes_conflict("Bucketlist Item already exists")
+                return self.error.not_acceptable("Bucketlist Item must have a name")
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Login to get access token")
 
 
 # app.route: /bucketlists/<int:id>
 # --> Manipulating a specific already existing buckelist
-class BucketlistView(MethodView):
+class BucketlistItemView(BucketlistItemsView):
     '''
     Facilitating manipulation of a bucketlist
     '''
@@ -86,15 +82,11 @@ class BucketlistView(MethodView):
             if not isinstance(user_id, str):
                 bucketlist_item = BucketlistItem.query.filter_by(belongs_to=id, id=item_id).first()
                 if not bucketlist_item:
-                    abort(404)
-                response = jsonify({
-                    'id': bucketlist_item.id,
-                    'name': bucketlist_item.name,
-                    'date_created': bucketlist_item.date_created,
-                    'date_modified': bucketlist_item.date_modified,
-                    'belongs_to': bucketlist_item.belongs_to
-                    })
-                return make_response(response), 200
+                    return self.error.not_found("Bucketlist not found")
+                response = self.response.define_bucketlist_item(bucketlist_item)
+                return self.success.complete_request(response)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Login to get an access token")
 
 
     def put(self, id, item_id):
@@ -105,25 +97,18 @@ class BucketlistView(MethodView):
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
-                bucketlist_item = BucketlistItem.query.filter_by(belongs_to=id, id=item_id).first()
+                bucketlist_item = BucketlistItem.query.filter_by(belongs_to=id,
+                    id=item_id).first()
                 if not bucketlist_item:
-                    return make_response(
-                        jsonify({
-                            "message": "The Item does not exist"
-                            })), 404
+                    return self.error.not_found("Bucketlist Item does not exist")
                 name = str(request.data.get('name', ''))
-
-                bucketlist_item.name = name
-                bucketlist_item.save()
-
-                response = {
-                    'id': bucketlist_item.id,
-                    'name': bucketlist_item.name,
-                    'date_created': bucketlist_item.date_created,
-                    'date_modified': bucketlist_item.date_modified,
-                    'belongs_to': bucketlist_item.belongs_to
-                }
-                return make_response(jsonify(response)), 200
+                if name:
+                    bucketlist_item.name = name
+                    bucketlist_item.save()
+                    response = self.response.define_bucketlist_item(bucketlist_item)
+                return self.success.complete_request(response)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Login to get an access token")
 
 
     def delete(self, id, item_id):
@@ -133,18 +118,21 @@ class BucketlistView(MethodView):
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
-                bucketlist_item = BucketlistItem.query.filter_by(belongs_to=id, id=item_id).first()
+                bucketlist_item = BucketlistItem.query.filter_by(belongs_to=id,
+                    id=item_id).first()
                 if not bucketlist_item:
-                    abort(404)
+                    return self.error.not_found("Bucketlist Item does not exist")
                 bucketlist_item.delete()
-                response = jsonify({"message": "bucketlist {} deleted".format(bucketlist_item.id)})
-                return make_response(response), 200
+                response = "Bucketlist Item {} has been deleted".format(item_id)
+                return self.success.complete_request(response)
+            return self.error.forbid_action("Token has been rejected")
+        return self.error.unauthorized("Login to get an access token")
 
 
 
 # Define the API resource
-bucketlist_items_view = BucketlistsView.as_view('bucketlists_view')
-bucketlist_item_view = BucketlistView.as_view('bucketlist_view')
+bucketlist_items_view = BucketlistItemsView.as_view('bucketlists_view')
+bucketlist_item_view = BucketlistItemView.as_view('bucketlist_view')
 
 # Define the rule for bucketlists operations
 # Then add the rule to the blueprint

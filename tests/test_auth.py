@@ -37,18 +37,18 @@ class AuthTestCase(unittest.TestCase):
         incomplete_registration_data = {'email': 'test@incomplete.com'}
         res = self.client().post('/auth/register', data=incomplete_registration_data)
         self.assertRaises(Exception, res)
-        self.assertEqual(res.status_code, 401) # Forbidden
+        self.assertEqual(res.status_code, 500)
 
     def test_already_registered_user(self):
         """Test that a user cannot be registered twice."""
         res = self.client().post('/auth/register', data=self.user_data)
         self.assertEqual(res.status_code, 201)
         second_res = self.client().post('/auth/register', data=self.user_data)
-        self.assertEqual(second_res.status_code, 202)
+        self.assertEqual(second_res.status_code, 406)
         # get the results returned in json format
         result = json.loads(second_res.data.decode())
         self.assertEqual(
-            result['message'], "User already exists. Please login.")
+            result['error'], "User already exists. Please login.")
     def test_user_login(self):
         """Test registered user can login."""
         res = self.client().post('/auth/register', data=self.user_data)
@@ -58,10 +58,10 @@ class AuthTestCase(unittest.TestCase):
         # get the results in json format
         result = json.loads(login_res.data.decode())
         # Test that the response contains success message
-        self.assertEqual(result['message'], "You logged in successfully.")
+        self.assertEqual(result['message']['info'], "You logged in successfully.")
         # Assert that the status code is equal to 200
         self.assertEqual(login_res.status_code, 200)
-        self.assertTrue(result['access_token'])
+        self.assertTrue(result['message']['access_token'])
 
     def test_non_registered_user_login(self):
         """Test non registered users cannot login."""
@@ -79,4 +79,4 @@ class AuthTestCase(unittest.TestCase):
         # and an error status code 401(Unauthorized)
         self.assertEqual(res.status_code, 401)
         self.assertEqual(
-            result['message'], "Invalid email or password, Please try again")
+            result['error'], "Invalid email or password, Please try again")
