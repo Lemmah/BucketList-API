@@ -42,7 +42,7 @@ class RegistrationView(MethodView):
                 if not email:
                     return self.error.not_acceptable(
                         "You cannot register without an email")
-                    
+
                 # check correct format
                 regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
                 if not re.match(regex, email):
@@ -54,7 +54,8 @@ class RegistrationView(MethodView):
                 user.save()
 
                 response = {
-                    'message': 'You registered successfully. Please log in.'
+                    'message': 'You registered successfully. Please log in.',
+                    'user': email,
                 }
                 # return a response notifying the user that they registered successfully
                 return self.success.create_resource(response)
@@ -65,7 +66,7 @@ class RegistrationView(MethodView):
             # There is an existing user. We don't want to register users twice
             # Return a message to the user telling them that they they already exist
             return self.error.not_acceptable("User already exists. Please login.")
-            
+
 class LoginView(RegistrationView):
     """This class-based view handles user login and access token generation."""
 
@@ -73,7 +74,8 @@ class LoginView(RegistrationView):
         """Handle POST request for this view. Url ---> /auth/login"""
         try:
             # Get the user object using their email (unique to every user)
-            user = User.query.filter_by(email=request.data['email']).first()
+            email = request.data['email']
+            user = User.query.filter_by(email=email).first()
             # Try to authenticate the found user using their password
             if user and user.password_is_valid(request.data['password']):
                 # Generate the access token. This will be used as the authorization header
@@ -81,7 +83,8 @@ class LoginView(RegistrationView):
                 if access_token:
                     response = {
                         'info': 'You logged in successfully.',
-                        'access_token': access_token.decode()
+                        'access_token': access_token.decode(),
+                        'user': email,
                     }
                     return self.success.complete_request(response)
             else:
@@ -91,9 +94,23 @@ class LoginView(RegistrationView):
             # Return a server error using the HTTP Error Code 500 (Internal Server Error)
             return self.error.internal_server_error(str(e))
 
+class LogoutView(LoginView):
+    """ Invalidate Token """
+
+    def post(self):
+        """ Pop out the token """
+        try:
+            print(type(request.headers))
+            return self.success.complete_request("You logged out successfully")
+        except KeyError:
+            return self.error.bad_request("You are already logged out")
+
+
+
 # Define the API resource
 registration_view = RegistrationView.as_view('registration_view')
 login_view = LoginView.as_view('login_view')
+logout_view = LogoutView.as_view('logout_view')
 
 # Define the rule for the registration url --->  /auth/register
 # Then add the rule to the blueprint
@@ -109,3 +126,9 @@ auth_blueprint.add_url_rule(
     view_func=login_view,
     methods=['POST']
 )
+
+# Define the rule for the logout url ---> /auth/logout
+auth_blueprint.add_url_rule(
+    '/auth/logout',
+    view_func=logout_view,
+    methods=['POST'])
