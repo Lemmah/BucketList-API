@@ -10,7 +10,9 @@ from instance.config import app_config
 db = SQLAlchemy()
 
 def create_app(config_name):
+    from flask_cors import CORS
     app = FlaskAPI(__name__, instance_relative_config=True)
+    CORS(app)
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -23,7 +25,6 @@ def create_app(config_name):
     # The Bucketlist Items Endpoints registration
     from .bucketlist_items import bucketlist_items_blueprint
     app.register_blueprint(bucketlist_items_blueprint)
-    
     # The Authentication Blue Print
     from .auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
